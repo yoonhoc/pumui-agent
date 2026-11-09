@@ -303,7 +303,7 @@
     "split_dir": "data_upload",
     "result_dir": "results_upload",
     "out_dir": "out/sets",
-    "answer_file": "answers_final/팀명_최종제출_answer.json",
+    "answer_file": "answers_final/신라면_최종제출_answer.json",
     "task": "물품 구매 품의: 비교견적 검토와 업체 선정",
     "unit": "구매 건 1건(같은 품목의 비교견적서 묶음) = 케이스 1건 = 판정 1건",
     "output_keys": ["decision", "selected_vendor", "selected_total", "quote_count"],

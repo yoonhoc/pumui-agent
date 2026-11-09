@@ -2,8 +2,9 @@
 
 판정(config/rules.json set_pipeline, 위에서부터 먼저 맞는 것 하나):
   작성 중지      견적서가 min_quotes건 미만
+  담당자 확인 필요  합계를 읽지 못한 견적이 있음, 최저가 동률, 대표자 동일
   재견적 필요    최저가 견적서에 금액 계산 불일치(단가×수량, 품목 합계와 공급가액, 공급가액 10%와 부가세, 공급가액+부가세와 합계)
-  담당자 확인 필요  합계를 읽지 못한 견적이 있음, 최저가 동률, 대표자 동일, 최저가 견적서에 그 밖의 확인 사항(확인 불가 등)
+Studio 판정 워크플로(tools/make_set_workflow.py)의 '품의 판정' 노드와 같은 기준이다.
   작성 가능      위에 해당 없음 → 최저가 업체 선정
 """
 from common import rules
@@ -59,10 +60,10 @@ def decide(file_name, quotes, not_quote_pages=()):
 
     if len(quotes) < c["min_quotes"]:
         decision, reason = d["stop"], m["too_few"].format(n=len(quotes), min=c["min_quotes"])
+    elif set_flags:
+        decision, reason = d["check"], set_flags[0]
     elif blocking:
         decision, reason = d["requote"], m["requote"].format(vendor=best["vendor_name"], flag=blocking[0])
-    elif not best or best["review_flags"] or set_flags:
-        decision, reason = d["check"], (set_flags + (best["review_flags"] if best else []))[0]
     else:
         second = sorted(q["total_amount"] for q in known)[1]
         decision = d["ok"]
