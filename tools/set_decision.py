@@ -56,6 +56,8 @@ def decide(file_name, quotes, not_quote_pages=()):
             reps.setdefault(q["vendor_representative"], []).append(q["vendor_name"])
     set_flags += [m["same_rep"].format(vendors=", ".join(v), rep=r) for r, v in reps.items() if len(v) > 1]
     best = lows[0] if len(lows) == 1 and not unreadable else None
+    codes = c["review_codes"]
+    needs = [codes["unreadable"]] * bool(unreadable) + [codes["tie"]] * (len(lows) > 1) + [codes["same_rep"]] * any(len(v) > 1 for v in reps.values())
     blocking = [f for f in (best["review_flags"] if best else []) if any(w in f for w in c["blocking_flag_words"])]
 
     if len(quotes) < c["min_quotes"]:
@@ -71,9 +73,10 @@ def decide(file_name, quotes, not_quote_pages=()):
     out = {
         "file": file_name,
         "decision": decision,
-        "selected_vendor": best["vendor_name"] if best else "",
+        "selected_vendor": best["vendor_name"] if best else c["unknown_vendor"],
         "selected_total": best["total_amount"] if best else None,
         "quote_count": len(quotes),
+        "needs_review": needs + [codes["calc"]] * bool(blocking),
         "reason": reason,
         "review_flags": set_flags + ([m["vendor_flag"].format(vendor=best["vendor_name"], flag=f) for f in best["review_flags"]] if best else []),
         "quotes": quotes,

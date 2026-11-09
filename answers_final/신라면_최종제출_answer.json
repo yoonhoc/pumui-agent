@@ -5,7 +5,8 @@
     "decision",
     "selected_vendor",
     "selected_total",
-    "quote_count"
+    "quote_count",
+    "needs_review"
   ],
   "decision_values": [
     "작성 가능",
@@ -19,30 +20,32 @@
       "file": "신라면_최종제출_품의_set01.pdf",
       "documents": [
         "FAX 송부장",
-        "대성컴퓨터상사 견적서",
-        "한빛정보통신 견적서",
-        "(주)코어시스템즈 견적서"
+        "견적서",
+        "견적서",
+        "견적서"
       ],
       "answer": {
         "decision": "작성 가능",
         "selected_vendor": "(주)코어시스템즈",
         "selected_total": 19298400,
-        "quote_count": 3
+        "quote_count": 3,
+        "needs_review": []
       }
     },
     {
       "case_id": "B",
       "file": "신라면_최종제출_품의_set02.pdf",
       "documents": [
-        "새봄가구 견적서",
-        "(주)오피스웨이 견적서",
-        "청담인테리어(주) 견적서"
+        "견적서",
+        "견적서",
+        "견적서"
       ],
       "answer": {
         "decision": "작성 가능",
         "selected_vendor": "(주)오피스웨이",
         "selected_total": 13260000,
-        "quote_count": 3
+        "quote_count": 3,
+        "needs_review": []
       }
     },
     {
@@ -53,15 +56,18 @@
         "신라면_최종제출_품의_set03_3.pdf"
       ],
       "documents": [
-        "해든방역(주) 견적서",
-        "청정환경위생 견적서",
-        "깨끗한세상(주) 견적서"
+        "견적서",
+        "견적서",
+        "견적서"
       ],
       "answer": {
         "decision": "재견적 필요",
         "selected_vendor": "깨끗한세상(주)",
         "selected_total": 10890000,
-        "quote_count": 3
+        "quote_count": 3,
+        "needs_review": [
+          "계산 불일치"
+        ]
       }
     },
     {
@@ -72,15 +78,16 @@
         "신라면_최종제출_품의_set04_3.pdf"
       ],
       "documents": [
-        "한결인쇄사 견적서",
-        "(주)다온프린팅 견적서",
-        "대구종합인쇄 견적서"
+        "견적서",
+        "견적서",
+        "견적서"
       ],
       "answer": {
         "decision": "작성 가능",
         "selected_vendor": "대구종합인쇄",
         "selected_total": 9075000,
-        "quote_count": 3
+        "quote_count": 3,
+        "needs_review": []
       }
     },
     {
@@ -91,45 +98,54 @@
         "신라면_최종제출_품의_set05_3.pdf"
       ],
       "documents": [
-        "미래문구유통 견적서",
-        "(주)알찬오피스 견적서",
-        "오름문구 견적서"
+        "견적서",
+        "견적서",
+        "견적서"
       ],
       "answer": {
         "decision": "담당자 확인 필요",
-        "selected_vendor": "",
+        "selected_vendor": "확인 불가",
         "selected_total": null,
-        "quote_count": 3
+        "quote_count": 3,
+        "needs_review": [
+          "합계 확인 불가"
+        ]
       }
     },
     {
       "case_id": "F",
       "file": "신라면_최종제출_품의_set06.pdf",
       "documents": [
-        "안전소방(주) 견적서",
-        "(주)파이어케어 견적서",
-        "대경소방기술단 견적서"
+        "견적서",
+        "견적서",
+        "견적서"
       ],
       "answer": {
         "decision": "담당자 확인 필요",
-        "selected_vendor": "",
+        "selected_vendor": "확인 불가",
         "selected_total": null,
-        "quote_count": 3
+        "quote_count": 3,
+        "needs_review": [
+          "최저가 동률"
+        ]
       }
     },
     {
       "case_id": "G",
       "file": "신라면_최종제출_품의_set07.pdf",
       "documents": [
-        "에이원프로모션 견적서",
-        "(주)굿모멘트 견적서",
-        "아트프로모기획 견적서"
+        "견적서",
+        "견적서",
+        "견적서"
       ],
       "answer": {
         "decision": "담당자 확인 필요",
         "selected_vendor": "에이원프로모션",
         "selected_total": 6270000,
-        "quote_count": 3
+        "quote_count": 3,
+        "needs_review": [
+          "대표자 동일"
+        ]
       }
     }
   ]

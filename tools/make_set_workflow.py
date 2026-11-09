@@ -28,6 +28,7 @@ def build():
     src = json.loads((ROOT / "workflow/품의 Agent (노드).json").read_text(encoding="utf-8"))
     sp = rules()["set_pipeline"]
     d, keys, mq = sp["decisions"], sp["output_keys"], sp["min_quotes"]
+    rc, unknown = sp["review_codes"], sp["unknown_vendor"]
     order = [d["ok"], d["requote"], d["check"], d["stop"]]
     w = copy.deepcopy(src["workflowConfig"])
     w["workflow_name"] = NAME
@@ -45,6 +46,15 @@ def build():
     ie = w["informationExtractConfiguration"]
     quote = ie["schemas"][0]["json_schema"]["name"]
     ie["categorySchemaMapping"] = {"견적서": quote}
+    # 원문에 없는 값을 계산해 넣지 않게 한다(부가세 포함 표기만 있는 견적, 합계가 흐린 촬영본)
+    props = ie["schemas"][0]["json_schema"]["schema"]["properties"]
+    props["supply_amount"]["description"] = ("공급가액 합계(원, 부가세 제외). 쉼표 없이 정수. 견적서에 공급가액이 따로 적혀 있지 않으면(단가·합계가 부가세 포함으로만 "
+                                             "적혀 있으면) null로 두고 계산해 넣지 않는다. 칸이 흐려 읽을 수 없으면 null.")
+    props["vat_amount"]["description"] = ("부가세(원). 쉼표 없이 정수. 견적서에 부가세 금액이 따로 적혀 있지 않으면 null로 두고 계산해 넣지 않는다. "
+                                          "칸이 흐려 읽을 수 없으면 null.")
+    props["total_amount"]["description"] = ("부가세를 포함한 합계 금액(원). 쉼표 없이 정수. 'VAT 별도'라고 적힌 상단 금액은 공급가액이므로 쓰지 말고 표 아래 총 합계를 쓴다. "
+                                            "합계 칸이 흐리거나 가려져 읽을 수 없으면 null로 두고, 품목 금액을 더해 만들지 않는다. "
+                                            "이때 review_flags에 '확인 불가: 합계금액'을 넣는다.")
 
     review = f"""역할
 문서 분류에서 견적서마다 나누고 각각 추출해 모은 결과로, 한 구매 건의 비교견적을 검토한다. '기타'로 분류된 문서는 비교에서 뺀다.
@@ -80,14 +90,21 @@ def build():
 4. {d['ok']}: 위에 해당하지 않는다.
 
 선정 업체와 금액:
-- 최저가 업체를 하나로 정할 수 있으면 selected_vendor는 그 업체명(견적서에 적힌 그대로), selected_total은 그 합계다.
-- 최저가 동률이거나 합계 확인 불가인 견적서가 있어 최저가를 정할 수 없으면 selected_vendor는 빈 문자열, selected_total은 null이다.
+- 최저가 업체를 하나로 정할 수 있으면 {keys[1]} 값은 그 업체명(견적서에 적힌 그대로), {keys[2]} 값은 그 합계다.
+- 최저가 동률이거나 합계 확인 불가인 견적서가 있어 최저가를 정할 수 없으면 {keys[1]} 값은 "{unknown}", {keys[2]} 값은 null이다.
+
+사람 확인 항목({keys[4]}): 아래 말만, 해당하는 것을 이 순서대로 넣은 목록. 해당 없으면 [].
+- "{rc['unreadable']}": 합계 확인 불가인 견적서가 있다
+- "{rc['tie']}": 최저가 동률이다
+- "{rc['same_rep']}": 대표자 동일인 견적서가 있다
+- "{rc['calc']}": 최저가 견적서에 계산 문제가 있다
 
 JSON 객체 하나로만 답한다. 다른 글, 머리말, 코드 블록은 쓰지 않는다. 키는 아래 {len(keys)}개만, 이 이름 그대로 쓴다.
 - {keys[0]}: {' · '.join(order)} 중 하나(글자 그대로)
-- {keys[1]}: 선정 업체명 또는 빈 문자열
+- {keys[1]}: 선정 업체명 또는 "{unknown}"
 - {keys[2]}: 정수(쉼표·원 없이) 또는 null
 - {keys[3]}: 비교한 견적서 수(정수, '기타' 문서는 세지 않는다)
+- {keys[4]}: 문자열 목록
 {COMMON}"""
 
     decide = f"앞 단계 '{RESULT}'의 {keys[0]} 값을 그대로 고른다.\n{COMMON}"

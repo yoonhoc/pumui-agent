@@ -306,7 +306,11 @@
     "answer_file": "answers_final/신라면_최종제출_answer.json",
     "task": "물품 구매 품의: 비교견적 검토와 업체 선정",
     "unit": "구매 건 1건(같은 품목의 비교견적서 묶음) = 케이스 1건 = 판정 1건",
-    "output_keys": ["decision", "selected_vendor", "selected_total", "quote_count"],
+    "output_keys": ["decision", "selected_vendor", "selected_total", "quote_count", "needs_review"],
+    "review_codes": {"unreadable": "합계 확인 불가", "tie": "최저가 동률", "same_rep": "대표자 동일", "calc": "계산 불일치"},
+    "_review_codes_comment": "needs_review(사람 확인 칸)에 쓰는 말. 정답지·Studio 판정 노드·코드가 이 글자 그대로 쓴다. 순서도 이 순서. 해당 없으면 [].",
+    "unknown_vendor": "확인 불가",
+    "_unknown_vendor_comment": "최저가 동률이거나 합계를 읽지 못한 견적이 있어 업체를 정할 수 없을 때 selected_vendor 값(selected_total은 null).",
     "form": "forms/word/물품구매품의서_양식.docx",
     "decisions": {
       "stop": "작성 중지",
