@@ -56,19 +56,21 @@ def run_style(p, st):
     r = next((r for r in p.iter(q("r")) if "".join(t.text or "" for t in r.iter(q("t"))).strip()), None)
     r = r if r is not None else p.find(".//w:r", NS)
     pr = r.find("w:rPr", NS) if r is not None else None
-    face, size, bold = st.face, st.size, False
+    face, size, bold, spacing, color = st.face, st.size, False, 0, ""
     if pr is not None:
-        f, s = pr.find("w:rFonts", NS), pr.find("w:sz", NS)
+        f, s, sp, col = pr.find("w:rFonts", NS), pr.find("w:sz", NS), pr.find("w:spacing", NS), pr.find("w:color", NS)
+        color = col.get(q("val"), "") if col is not None and col.get(q("val"), "auto") != "auto" else ""
         face = (f.get(q("eastAsia")) or f.get(q("ascii")) or face) if f is not None else face
         size = int(s.get(q("val"))) / 2 if s is not None else size
         bold = pr.find("w:b", NS) is not None and pr.find("w:b", NS).get(q("val"), "1") not in ("0", "false")
-    return face, size, bold
+        spacing = int(sp.get(q("val"))) / 20 if sp is not None else 0  # 자간(pt)
+    return face, size, bold, spacing, color
 
 
 def render_para(p, st):
     text = Cell.para_text(p)
     jc = p.find("w:pPr/w:jc", NS)
-    face, size, bold = run_style(p, st)
+    face, size, bold, spacing, color = run_style(p, st)
     css = [f"text-align:{ALIGN.get(jc.get(q('val')) if jc is not None else 'left', 'left')}",
            f"font-size:{size:g}pt", f"line-height:{st.line:.2f}"]
     fam = font_family(face)
@@ -76,6 +78,10 @@ def render_para(p, st):
         css.append(f"font-family:{fam}")
     if bold:
         css.append("font-weight:700")
+    if spacing:
+        css.append(f"letter-spacing:{spacing:g}pt")
+    if color:
+        css.append(f"color:#{color}")
     if text.strip() and NUMBER.fullmatch(text.strip()):
         css.append("white-space:nowrap")
     return f'<p style="{";".join(css)}">{html.escape(text) if text else "&nbsp;"}</p>'
@@ -100,7 +106,11 @@ def render_table(tbl, st):
             va = c.el.find("w:tcPr/w:vAlign", NS)
             style = f"vertical-align:{VALIGN.get(va.get(q('val')), 'top')};" if va is not None else ""
             body = "".join(render_block(ch, st) for ch in c.el if ch.tag in (q("p"), q("tbl")))
-            out.append(f'<td colspan="{c.colspan}" rowspan="{c.rowspan}" style="{style}padding:1px 6px">{body}</td>')
+            mar = c.el.find("w:tcPr/w:tcMar", NS)  # 칸 안 여백: 양식 값, 없으면 Word 기본(좌우 108 twip)
+            pad = [int(mar.find(q(s)).get(q("w"), "0")) / PX if mar is not None and mar.find(q(s)) is not None else d
+                   for s, d in (("top", 0), ("right", 7.2), ("bottom", 0), ("left", 7.2))]
+            style += "padding:" + " ".join(f"{v:.1f}px" for v in pad)
+            out.append(f'<td colspan="{c.colspan}" rowspan="{c.rowspan}" style="{style}">{body}</td>')
         out.append("</tr>")
     out.append("</table>")
     return "".join(out)

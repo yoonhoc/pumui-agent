@@ -302,7 +302,7 @@
     "result_dir": "results_upload",
     "out_dir": "out/sets",
     "answer_dir": "answers_final",
-    "form": "forms/word/품의서.docx",
+    "form": "forms/word/물품구매품의서_양식.docx",
     "decisions": {
       "stop": "작성 중지",
       "requote": "재견적 필요",
@@ -344,7 +344,24 @@
       "돋움": "Dotum",
       "고딕": "Dotum",
       "산세리프": "Gulim",
-      "궁서": "Gungsuh"
+      "궁서": "Gungsuh",
+      "울릉도": "Malgun Gothic",
+      "Poppy": "Malgun Gothic"
+    },
+    "docx_pdf": {
+      "_comment": "Word 품의서 → PDF 변환 순서. word: 이 PC의 MS Word로 저장(Word 화면과 똑같음, Windows), soffice: LibreOffice(배포 서버), html: Word 없이 그린 미리보기를 Chrome으로 인쇄(근사치). 앞에서 실패하면 다음 것을 쓴다.",
+      "order": [
+        "word",
+        "soffice",
+        "html"
+      ],
+      "soffice": [
+        "soffice",
+        "libreoffice",
+        "C:\\Program Files\\LibreOffice\\program\\soffice.exe",
+        "/usr/bin/soffice"
+      ],
+      "timeout_seconds": 120
     },
     "default_fonts": [
       "Malgun Gothic",

@@ -227,6 +227,38 @@ class Document:
     def body_paragraphs(self):
         return [t.strip() for t in (Cell.para_text(p) for p in self.outside_paragraphs()) if t.strip()]
 
+    def fit_page(self, line=1.4, safety=1.06):
+        """표가 한 쪽을 넘으면, 가장 여유가 큰 줄(양식의 큰 빈칸)의 최소 높이를 넘친 만큼 줄인다.
+        글자 높이는 칸 폭에 맞춘 줄 수로 어림한다(한글 1자 ≈ 글자 크기, 영숫자 ≈ 0.55배). 품목 줄을 늘려도 1쪽에 맞추기 위함."""
+        root = self.sections[self.doc_xml]
+        sect = root.find(".//w:body/w:sectPr", NS)
+        if sect is None or not self.tables:
+            return
+        sz, mg = sect.find("w:pgSz", NS), sect.find("w:pgMar", NS)
+        room = int(sz.get(q("h"))) - int(mg.get(q("top"))) - int(mg.get(q("bottom")))
+        t = max((t for t in self.tables if not any(a.tag == q("tbl") for a in t.el.iterancestors())), key=lambda t: t.rows)
+        need, slack = [], []
+        for r in range(t.rows):
+            text_h = 0
+            for c in (c for c in t.cells if c.row == r and c.rowspan == 1):
+                w = c.inner_width() / 5 or 2000
+                h = 0
+                for p in c.paragraphs():
+                    s = p.find(".//w:r/w:rPr/w:sz", NS)
+                    pt = int(s.get(q("val"))) / 2 if s is not None else 10
+                    text = Cell.para_text(p)
+                    width = sum(pt * 20 * (1 if ord(ch) > 0x2E80 else 0.6) for ch in text)
+                    h += max(1, -(-int(width) // max(1, int(w) - 200))) * pt * 20 * line
+                text_h = max(text_h, h + 60)
+            need.append(max(t.row_height(r), text_h))
+            slack.append(t.row_height(r) - text_h)
+        over = int(sum(need) * safety) - room  # 글꼴이 바뀌면 글자 폭이 달라지므로 여유를 둔다
+        if over <= 0:
+            return
+        r = max(range(t.rows), key=lambda i: slack[i])
+        if slack[r] > 0:
+            t.set_row_height(r, int(t.row_height(r) - min(over, slack[r])))
+
     def save(self, path):
         for name, root in self.sections.items():
             self.files[name] = etree.tostring(root, xml_declaration=True, encoding="UTF-8", standalone=True)
