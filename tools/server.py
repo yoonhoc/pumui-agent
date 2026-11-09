@@ -32,7 +32,19 @@ from common import ROOT, config, fields, html_to_pdf, rules
 from fill_form import fill
 from grouping import group as group_quotes
 from harness import ACK, HOLD, coerce, normalize, recheck, resolve, source_text
-from hwpx_preview import preview
+from hwpx_preview import preview as hwpx_preview
+
+
+def preview(path, pdf=False):
+    """양식 미리보기(HTML)와, pdf=True면 PDF. Word는 tools/docx_pdf.py(Word → LibreOffice → 미리보기 인쇄 순), HWPX는 미리보기 인쇄."""
+    if Path(path).suffix.lower() != ".docx":
+        return hwpx_preview(path, pdf)
+    from docx_preview import preview as docx_html
+    html_file = docx_html(path)
+    if not pdf:
+        return html_file
+    from docx_pdf import to_pdf
+    return to_pdf(path)[0]
 from score import unwrap
 from select_vendor import cross_checks, finalize, recommend
 
@@ -192,7 +204,8 @@ def list_forms(kind="pumui"):
     dirs = CFG["gyeolui_form_dirs"] if kind == "gyeolui" else CFG["form_dirs"]
     filters = CFG.get("gyeolui_form_filter", {}) if kind == "gyeolui" else {}
     for d in dirs:
-        for p in sorted((ROOT / d).glob("**/*.hwpx")):
+        ext = CFG.get("gyeolui_form_ext" if kind == "gyeolui" else "form_ext", ".hwpx")
+        for p in sorted((ROOT / d).glob(f"**/*{ext}")):
             if ".form." in p.name or (d in filters and not re.search(filters[d], p.stem)):
                 continue
             out.append({"path": str(p.relative_to(ROOT)).replace("\\", "/"), "name": p.stem, "group": p.parent.name})
@@ -222,16 +235,19 @@ def do_fill(form_rel, qid):
     folder = OUT / stamp
     folder.mkdir(parents=True, exist_ok=True)
     name = f"{STATE['case'].get('case_id', 'case')}_{Path(form_rel).stem}"
-    filled = doc.save(folder / f"{name}.hwpx")
-    # PDF는 결의 쪽 증빙 묶음에 붙이려고 만든다. 화면에서는 미리보기를 브라우저로 인쇄·PDF 저장한다
+    filled = doc.save(folder / f"{name}{Path(form_rel).suffix.lower()}")
+    # PDF도 함께 저장한다(내려받기용, 결의 쪽 증빙 묶음 앞에 붙이는 용도)
     pdf = preview(filled, pdf=True)
-    report["files"] = {"hwpx": out_url(filled), "pdf": out_url(pdf), "html": out_url(filled.with_suffix(".preview.html"))}
+    if not filled.with_suffix(".preview.html").exists():
+        preview(filled)
+    report["files"] = {"doc": out_url(filled), "pdf": out_url(pdf), "html": out_url(filled.with_suffix(".preview.html")),
+                       "ext": filled.suffix}
     (folder / f"{name}.report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
     # 결의로 넘길 값: 품의 금액·업체·품목 + 이 품의서 PDF(증빙 묶음 앞에 붙일 수 있다)
     from fill_form import Roles, build_values  # 품의서에 실제로 들어간 제목(비었으면 자동 제목)
     title = (build_values(st["result"], STATE["case"], STATE["selection"], Roles()).get("title") or {}).get("value")
     STATE["handoff"] = gyeolui.handoff(st["result"], {**STATE["case"], "title": title or STATE["case"].get("title")},
-                                       STATE["selection"], {"pdf": str(pdf), "hwpx": str(filled), "form": form_rel})
+                                       STATE["selection"], {"pdf": str(pdf), "doc": str(filled), "form": form_rel})
     (folder / f"{name}.handoff.json").write_text(json.dumps(STATE["handoff"], ensure_ascii=False, indent=2), encoding="utf-8")
     return {"ok": True, "report": report, "handoff": handoff_summary()}
 
@@ -415,7 +431,8 @@ def g_fill(gid, form_rel):
     name = f"{e['name']}_{Path(form_rel).stem}"
     filled = doc.save(folder / f"{name}.hwpx")
     pdf = preview(filled, pdf=True)
-    report["files"] = {"hwpx": out_url(filled), "pdf": out_url(pdf), "html": out_url(filled.with_suffix(".preview.html"))}
+    report["files"] = {"doc": out_url(filled), "pdf": out_url(pdf), "html": out_url(filled.with_suffix(".preview.html")),
+                       "ext": filled.suffix}
     record = {"report": report, "state": st, "form_input": {"result": result, "case": case}}
     (folder / f"{name}.report.json").write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
     e["fill"] = report["files"]

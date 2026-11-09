@@ -82,9 +82,11 @@
       ".jpeg"
     ],
     "form_dirs": [
-      "forms/web",
-      "forms/uploads"
+      "forms/word"
     ],
+    "form_ext": ".docx",
+    "_form_comment": "품의서 양식은 forms/word의 Word 양식 하나(고덕 물품구매품의서)로 고정한다. 양식이 하나면 화면에서 고르지 않고 바로 쓴다. 작성하면 Word와 PDF(tools/docx_pdf.py)를 함께 저장한다.",
+    "gyeolui_form_ext": ".hwpx",
     "upload_dir": "forms/uploads",
     "default_case": "examples/case_team01.json",
     "output_dir": "out/ui",
@@ -301,7 +303,10 @@
     "split_dir": "data_upload",
     "result_dir": "results_upload",
     "out_dir": "out/sets",
-    "answer_dir": "answers_final",
+    "answer_file": "answers_final/팀명_최종제출_answer.json",
+    "task": "물품 구매 품의: 비교견적 검토와 업체 선정",
+    "unit": "구매 건 1건(같은 품목의 비교견적서 묶음) = 케이스 1건 = 판정 1건",
+    "output_keys": ["decision", "selected_vendor", "selected_total", "quote_count"],
     "form": "forms/word/물품구매품의서_양식.docx",
     "decisions": {
       "stop": "작성 중지",

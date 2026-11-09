@@ -244,7 +244,7 @@
   },
   "form": {
     "heading": "품의서 작성",
-    "lead": "기관 양식을 선택하거나 업로드합니다.",
+    "lead": "기관 양식에 채워 Word와 PDF로 저장합니다.",
     "legend": "양식",
     "upload": "양식 업로드",
     "pick_first": "양식을 선택하면 미리보기가 표시됩니다.",
@@ -254,6 +254,7 @@
     "blocked": "검토에서 처리하지 않은 항목이 있습니다.",
     "result": "작성 완료",
     "download_hwpx": "HWPX 다운로드",
+    "fixed_form": "양식: {name}. 작성하면 Word 파일과 PDF가 함께 저장됩니다.",
     "print": "인쇄·PDF 저장",
     "print_help": "인쇄 창에서 프린터나 'PDF로 저장'을 고르세요. 한글에서 HWPX를 열어 인쇄해도 됩니다.",
     "unplaced": "양식에 해당 칸 없음",
@@ -279,6 +280,7 @@
   "upload": {
     "only_hwpx": ".hwpx 파일만 업로드할 수 있습니다."
   },
+  "download": {".docx": "Word 다운로드", ".hwpx": "HWPX 다운로드", ".pdf": "PDF 다운로드"},
   "close": "닫기",
   "offline": "서버와 연결되지 않습니다. 서버가 꺼져 있으면 다시 켠 뒤 이 화면을 새로고침하세요.",
   "modes": {
